@@ -151,6 +151,62 @@ const NewsBoard = ({ darkMode, selectedCategory }) => {
         </div>
       </div>
 
+      {/* News of the Day */}
+      {!loading && articles.length > 0 && (
+        <div
+          className={`p-4 mb-5 rounded shadow ${darkMode ? "bg-secondary text-light" : "bg-white text-dark"}`}
+          style={{ border: "2px solid #dc3545", position: "relative", overflow: "hidden" }}
+        >
+          <div style={{ position: "absolute", top: "0", right: "0" }}>
+            <span className="badge bg-danger px-3 py-2" style={{ borderRadius: "0 0 0 12px", fontSize: "13px" }}>
+              ⭐ News of the Day
+            </span>
+          </div>
+          <div className="row align-items-center">
+            <div className="col-md-5 mb-3 mb-md-0">
+              <img
+                src={articles[0].urlToImage || "https://via.placeholder.com/600x300?text=No+Image"}
+                alt={articles[0].title}
+                className="img-fluid rounded"
+                style={{ width: "100%", height: "250px", objectFit: "cover" }}
+              />
+            </div>
+            <div className="col-md-7">
+              {articles[0].source?.name && (
+                <span className="badge bg-danger mb-2">{articles[0].source.name}</span>
+              )}
+              <h3 className="fw-bold mb-2" style={{ lineHeight: "1.4" }}>
+                {articles[0].title}
+              </h3>
+              <p className="mb-3" style={{ opacity: 0.8 }}>
+                {articles[0].description}
+              </p>
+              <div className="d-flex align-items-center gap-3 flex-wrap">
+                <small className="text-muted">
+                  🕐 {articles[0].publishedAt ? new Date(articles[0].publishedAt).toLocaleString() : ""}
+                </small>
+                <a href={articles[0].url} target="_blank" rel="noopener noreferrer" className="btn btn-danger btn-sm">
+                  Read Full Story →
+                </a>
+                <button
+                  onClick={() => handleBookmark({
+                    title: articles[0].title,
+                    description: articles[0].description,
+                    src: articles[0].urlToImage,
+                    url: articles[0].url,
+                    publishedAt: articles[0].publishedAt,
+                    source: articles[0].source?.name,
+                  })}
+                  className={`btn btn-sm ${isBookmarked(articles[0].url) ? "btn-warning" : "btn-outline-warning"}`}
+                >
+                  🔖 {isBookmarked(articles[0].url) ? "Bookmarked" : "Bookmark"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Heading */}
       <h2 className="text-center mb-4">
         <span style={{ color: "red", fontWeight: "bold" }}>

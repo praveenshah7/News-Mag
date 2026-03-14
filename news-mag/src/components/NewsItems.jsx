@@ -28,7 +28,6 @@ export const SkeletonCard = ({ darkMode }) => {
   );
 };
 
-// Reading time calculator
 const getReadingTime = (text) => {
   if (!text) return "1 min read";
   const words = text.trim().split(/\s+/).length;
@@ -39,6 +38,9 @@ const getReadingTime = (text) => {
 const NewsItem = ({ title, description, src, url, darkMode, publishedAt, isBookmarked, onBookmark, source }) => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [hovered, setHovered] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const showToast = (message) => {
     setToast({ show: true, message });
@@ -58,6 +60,41 @@ const NewsItem = ({ title, description, src, url, darkMode, publishedAt, isBookm
   const handleBookmarkClick = () => {
     onBookmark({ title, description, src, url, publishedAt });
     showToast(isBookmarked ? "Bookmark removed!" : "Article bookmarked!");
+  };
+
+  const handleAISummary = async () => {
+    if (summary) { setShowSummary(!showSummary); return; }
+    setSummaryLoading(true);
+    setShowSummary(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.REACT_APP_ANTHROPIC_KEY,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `Summarize this news article in 2-3 short sentences. Be concise and informative.
+Title: ${title}
+Description: ${description}
+Just give the summary, no intro or extra text.`
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.find(c => c.type === "text")?.text || "Could not generate summary.";
+      setSummary(text);
+    } catch (err) {
+      setSummary("Failed to generate summary. Please try again.");
+    } finally {
+      setSummaryLoading(false);
+    }
   };
 
   return (
@@ -80,51 +117,42 @@ const NewsItem = ({ title, description, src, url, darkMode, publishedAt, isBookm
       >
         {/* Image */}
         <div style={{ overflow: "hidden", height: "200px", position: "relative" }}>
-          <img
-            src={src}
-            className="card-img-top"
-            alt={title}
-            style={{
-              height: "200px", width: "100%", objectFit: "cover",
-              transform: hovered ? "scale(1.08)" : "scale(1)",
-              transition: "transform 0.4s ease",
-            }}
+          <img src={src} className="card-img-top" alt={title}
+            style={{ height: "200px", width: "100%", objectFit: "cover", transform: hovered ? "scale(1.08)" : "scale(1)", transition: "transform 0.4s ease" }}
           />
-          {/* Reading Time Badge on image */}
-          <span
-            style={{
-              position: "absolute",
-              bottom: "8px",
-              right: "8px",
-              background: "rgba(0,0,0,0.7)",
-              color: "#fff",
-              fontSize: "11px",
-              padding: "3px 8px",
-              borderRadius: "20px",
-            }}
-          >
+          <span style={{ position: "absolute", bottom: "8px", right: "8px", background: "rgba(0,0,0,0.7)", color: "#fff", fontSize: "11px", padding: "3px 8px", borderRadius: "20px" }}>
             ⏱ {getReadingTime(description)}
           </span>
         </div>
 
         <div className="card-body d-flex flex-column">
-          {/* Source Badge */}
           {source && (
-            <span
-              className="badge bg-danger mb-2"
-              style={{ width: "fit-content", fontSize: "11px" }}
-            >
+            <span className="badge bg-danger mb-2" style={{ width: "fit-content", fontSize: "11px" }}>
               📰 {source}
             </span>
           )}
-
-          <h5
-            className="card-title"
-            style={{ color: hovered ? "#dc3545" : "", transition: "color 0.3s ease" }}
-          >
+          <h5 className="card-title" style={{ color: hovered ? "#dc3545" : "", transition: "color 0.3s ease" }}>
             {title}
           </h5>
           <p className="card-text">{description}</p>
+
+          {/* AI Summary Box */}
+          {showSummary && (
+            <div
+              className={`p-2 mb-2 rounded ${darkMode ? "bg-secondary" : "bg-light"}`}
+              style={{ fontSize: "13px", border: "1px solid #dc3545" }}
+            >
+              <strong className="text-danger">🤖 AI Summary:</strong>
+              <p className="mb-0 mt-1">
+                {summaryLoading ? (
+                  <span>
+                    <span className="spinner-border spinner-border-sm text-danger me-2" role="status"></span>
+                    Generating summary...
+                  </span>
+                ) : summary}
+              </p>
+            </div>
+          )}
 
           <p className="card-text mt-auto">
             <small className="text-muted">
@@ -132,10 +160,20 @@ const NewsItem = ({ title, description, src, url, darkMode, publishedAt, isBookm
             </small>
           </p>
 
-          <div className="d-flex gap-2 mt-2">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary flex-grow-1">Read More</a>
-            <button onClick={handleBookmarkClick} className={`btn ${isBookmarked ? "btn-warning" : "btn-outline-warning"}`} title={isBookmarked ? "Remove Bookmark" : "Bookmark"}>🔖</button>
-            <button onClick={handleShare} className="btn btn-outline-success" title="Share Article">🔗</button>
+          {/* Buttons */}
+          <div className="d-flex gap-1 mt-2">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm flex-grow-1">
+              Read More
+            </a>
+            <button onClick={handleAISummary} className={`btn btn-sm ${showSummary ? "btn-danger" : "btn-outline-danger"}`} title="AI Summary">
+              🤖
+            </button>
+            <button onClick={handleBookmarkClick} className={`btn btn-sm ${isBookmarked ? "btn-warning" : "btn-outline-warning"}`} title={isBookmarked ? "Remove Bookmark" : "Bookmark"}>
+              🔖
+            </button>
+            <button onClick={handleShare} className="btn btn-sm btn-outline-success" title="Share Article">
+              🔗
+            </button>
           </div>
         </div>
       </div>
