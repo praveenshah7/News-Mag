@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const categories = ["General", "Business", "Technology", "Sports", "Entertainment", "Health", "Science"];
 
 const Navbar = ({ darkMode, setDarkMode, selectedCategory, setSelectedCategory }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [time, setTime] = useState(new Date());
+
+  // Live clock
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  };
 
   return (
     <nav
@@ -16,6 +31,17 @@ const Navbar = ({ darkMode, setDarkMode, selectedCategory, setSelectedCategory }
         <a className="navbar-brand fw-bold fs-4" href="/">
           <span className="badge bg-danger text-white">NewsMag</span>
         </a>
+
+        {/* Live Clock */}
+        <div
+          className={`d-none d-lg-flex flex-column align-items-center mx-3 ${darkMode ? "text-light" : "text-dark"}`}
+          style={{ fontSize: "12px", lineHeight: "1.3" }}
+        >
+          <span className="fw-bold" style={{ fontSize: "15px", color: "#dc3545" }}>
+            🕐 {formatTime(time)}
+          </span>
+          <span className="text-muted">{formatDate(time)}</span>
+        </div>
 
         <button
           className="navbar-toggler"
@@ -43,7 +69,6 @@ const Navbar = ({ darkMode, setDarkMode, selectedCategory, setSelectedCategory }
               >
                 📰 {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
               </button>
-
               <ul
                 className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? "show" : ""} ${
                   darkMode ? "dropdown-menu-dark" : ""
@@ -52,9 +77,7 @@ const Navbar = ({ darkMode, setDarkMode, selectedCategory, setSelectedCategory }
                 {categories.map((cat) => (
                   <li key={cat}>
                     <button
-                      className={`dropdown-item ${
-                        selectedCategory === cat.toLowerCase() ? "active" : ""
-                      }`}
+                      className={`dropdown-item ${selectedCategory === cat.toLowerCase() ? "active" : ""}`}
                       onClick={() => {
                         setSelectedCategory(cat.toLowerCase());
                         setDropdownOpen(false);
