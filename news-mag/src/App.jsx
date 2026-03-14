@@ -9,18 +9,24 @@ const App = () => {
     return saved ? JSON.parse(saved) : false;
   });
 
-  useEffect(() => {
-    alert("This is the official website!");
-  }, []);
+  const [selectedCategory, setSelectedCategory] = useState("general");
 
   useEffect(() => {
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
   }, [darkMode]);
 
   return (
-    <div className={darkMode ? "bg-dark text-light" : "bg-light text-dark"}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-      <NewsBoard darkMode={darkMode} />
+    <div
+      className={darkMode ? "bg-dark text-light" : "bg-light text-dark"}
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
+      <Navbar
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+      <NewsBoard darkMode={darkMode} selectedCategory={selectedCategory} />
       <Footer />
     </div>
   );

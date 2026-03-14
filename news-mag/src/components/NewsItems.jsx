@@ -13,7 +13,22 @@ export const SkeletonCard = ({ darkMode }) => {
   );
 };
 
-const NewsItem = ({ title, description, src, url, darkMode, publishedAt }) => {
+const NewsItem = ({ title, description, src, url, darkMode, publishedAt, isBookmarked, onBookmark }) => {
+  const handleShare = async () => {
+    if (navigator.share) {
+      // Native share on mobile
+      try {
+        await navigator.share({ title, text: description, url });
+      } catch (err) {
+        console.log("Share cancelled");
+      }
+    } else {
+      // Fallback: copy to clipboard on desktop
+      navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    }
+  };
+
   return (
     <div className={`card ${darkMode ? "bg-dark text-light" : ""}`} style={{ width: "300px" }}>
       <img src={src} className="card-img-top" alt={title} />
@@ -25,9 +40,25 @@ const NewsItem = ({ title, description, src, url, darkMode, publishedAt }) => {
             {publishedAt ? new Date(publishedAt).toLocaleString() : ""}
           </small>
         </p>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-2">
-          Read More
-        </a>
+        <div className="d-flex gap-2 mt-2">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary flex-grow-1">
+            Read More
+          </a>
+          <button
+            onClick={() => onBookmark({ title, description, src, url, publishedAt })}
+            className={`btn ${isBookmarked ? "btn-warning" : "btn-outline-warning"}`}
+            title={isBookmarked ? "Remove Bookmark" : "Bookmark"}
+          >
+            🔖
+          </button>
+          <button
+            onClick={handleShare}
+            className="btn btn-outline-success"
+            title="Share Article"
+          >
+            🔗
+          </button>
+        </div>
       </div>
     </div>
   );

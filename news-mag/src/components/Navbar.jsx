@@ -1,7 +1,10 @@
 import { useState } from "react";
 
-const Navbar = ({ darkMode, setDarkMode }) => {
+const categories = ["General", "Business", "Technology", "Sports", "Entertainment", "Health", "Science"];
+
+const Navbar = ({ darkMode, setDarkMode, selectedCategory, setSelectedCategory }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <nav
@@ -29,21 +32,51 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           className={`collapse navbar-collapse ${!isCollapsed ? "show" : ""}`}
           id="navbarNav"
         >
-          <ul className="navbar-nav ms-auto align-items-center">
-            <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="/">Home</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/">Features</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/">Pricing</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link disabled" aria-disabled="true" href="/">Disabled</a>
+          <ul className="navbar-nav ms-auto align-items-center gap-2">
+
+            {/* Category Dropdown */}
+            <li className="nav-item dropdown">
+              <button
+                className="btn btn-danger dropdown-toggle"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-expanded={dropdownOpen}
+              >
+                📰 {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+              </button>
+
+              <ul
+                className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? "show" : ""} ${
+                  darkMode ? "dropdown-menu-dark" : ""
+                }`}
+              >
+                {categories.map((cat) => (
+                  <li key={cat}>
+                    <button
+                      className={`dropdown-item ${
+                        selectedCategory === cat.toLowerCase() ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedCategory(cat.toLowerCase());
+                        setDropdownOpen(false);
+                        setIsCollapsed(true);
+                      }}
+                    >
+                      {cat === "General" && "🌍"}
+                      {cat === "Business" && "💼"}
+                      {cat === "Technology" && "💻"}
+                      {cat === "Sports" && "⚽"}
+                      {cat === "Entertainment" && "🎬"}
+                      {cat === "Health" && "🏥"}
+                      {cat === "Science" && "🔬"}
+                      {" "}{cat}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </li>
 
-            <li className="nav-item d-flex align-items-center ms-3">
+            {/* Dark Mode Toggle */}
+            <li className="nav-item d-flex align-items-center ms-2">
               <div className="form-check form-switch mb-0">
                 <input
                   className="form-check-input"
