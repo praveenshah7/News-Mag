@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import NewsItem, { SkeletonCard } from "./NewsItems";
+import NewsComparison from "./NewsComparison";
 
 const languages = [
   { code: "en", label: "🇺🇸 English" },
@@ -151,6 +152,9 @@ const NewsBoard = ({ darkMode, selectedCategory }) => {
         </div>
       </div>
 
+      {/* News Comparison */}
+      <NewsComparison darkMode={darkMode} />
+
       {/* News of the Day */}
       {!loading && articles.length > 0 && (
         <div
@@ -175,12 +179,8 @@ const NewsBoard = ({ darkMode, selectedCategory }) => {
               {articles[0].source?.name && (
                 <span className="badge bg-danger mb-2">{articles[0].source.name}</span>
               )}
-              <h3 className="fw-bold mb-2" style={{ lineHeight: "1.4" }}>
-                {articles[0].title}
-              </h3>
-              <p className="mb-3" style={{ opacity: 0.8 }}>
-                {articles[0].description}
-              </p>
+              <h3 className="fw-bold mb-2" style={{ lineHeight: "1.4" }}>{articles[0].title}</h3>
+              <p className="mb-3" style={{ opacity: 0.8 }}>{articles[0].description}</p>
               <div className="d-flex align-items-center gap-3 flex-wrap">
                 <small className="text-muted">
                   🕐 {articles[0].publishedAt ? new Date(articles[0].publishedAt).toLocaleString() : ""}
